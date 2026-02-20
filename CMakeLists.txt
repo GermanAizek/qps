@@ -40,6 +40,17 @@ remove_definitions(
     -DQT_NO_CAST_FROM_BYTEARRAY
 )
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    execute_process(COMMAND cat /proc/cpuinfo OUTPUT_VARIABLE CPUINFO)
+    string(REGEX MATCH "model name\t:.*Intel.*Pentium.*Silver.*" IS_GEMINI_LAKE "${CPUINFO}")
+    if(IS_GEMINI_LAKE)
+        string(REGEX MATCH "flags\t.*:.*avx.*" HAS_AVX "${CPUINFO}")
+        if(NOT HAS_AVX)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mno-avx")
+        endif()
+    endif()
+endif()
+
 # Must be defined after including GNUInstallDirs. Move with care.
 set(QPS_TRANSLATIONS_DIR
     "${CMAKE_INSTALL_FULL_DATAROOTDIR}/${PROJECT_NAME}/translations"
